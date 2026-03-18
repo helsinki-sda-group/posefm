@@ -1,0 +1,20 @@
+# Specify the dataset and its parameters
+[data]
+test.dataset_name = "kittitest"
+test.data_path = "data/KITTI"
+test.batch_size = 16
+test.combined = false
+
+# Provide model type and its params
+[model]
+save_dir = "models"
+model_path = ""
+params.full = true
+params.frontend = "PWC"
+params.cache = true
+
+# Inference time parameters
+[posefm]
+device = "cuda"
+conditioning = "img"
+sampling.num_t = 5

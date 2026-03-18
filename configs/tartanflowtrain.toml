@@ -1,0 +1,25 @@
+# Specify training hyperparams
+[trainer]
+lr = 0.0001
+epochs = 50
+print_every = 1
+device = "cuda"
+conditioning = "flow"
+
+# Specify the dataset and its parameters
+[data]
+train.dataset_name = "tartantrain"
+#train.data_path = <specify path to tartan train data>
+train.batch_size = 128
+train.val_split = 0.2
+train.num_workers = 16
+train.modality = "flow"
+
+# Provide model params
+[model]
+save_dir = "models"
+# Uncomment the following line if you want to initialize your model with TartanVO weights
+# model_path = "ckpts/tartanvo_1914_updated.pth"
+# To continue training from saved checkpoint you can use:
+# checkpoint_path = <path to your checkpoint>
+params.full = false
