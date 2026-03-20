@@ -36,6 +36,20 @@ import torch
 import torch.nn as nn
 
 from .FMNet import FMNet
+from .WAFT.waft_a1 import ViTWarpV8
+
+import json
+from pathlib import Path
+import argparse
+
+
+class WAFTWrapper(ViTWarpV8):
+    def __init__(self, args):
+        super().__init__(args)
+    def forward(imgs: list):
+        out = super().forward(imgs[0], imgs[1])
+        return out['flow'][-1]
+
 
 class PoseFMNet(nn.Module):
     def __init__(self, full=True, cache=False, frontend="PWC", *args, **kwargs):
@@ -44,11 +58,19 @@ class PoseFMNet(nn.Module):
             from .PWC import PWCDCNet
             self.flowNet = PWCDCNet()
         elif frontend == "WAFT":
-            pass
-            # from .WAFT import WAFT
-            # self.flownet = WAFT()
+            config_path = Path(__file__).parent / "WAFT/config/a1/tar-c-t.json"
+            with open(config_path) as f:
+                config = json.load(f)
+                config.update(**kwargs)
+                args = argparse.Namespace()
+                args_dict = args.__dict__
+                for key, value in config.items():
+                    args_dict[key] = value
+
+            self.flowNet = WAFTWrapper(args)
         else:
             raise ValueError(f"Unsupported frontend: {frontend}")
+        self.frontend = frontend
         self.poseNet = FMNet(**kwargs)
         self.full = full # Run full pipeline or only pose prediction
         self.cache = cache # User parameter that enables caching
@@ -65,4 +87,3 @@ class PoseFMNet(nn.Module):
         # Estimate pose using flow matching
         pose = self.poseNet(n, t, flow_input)
         return pose
-

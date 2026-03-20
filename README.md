@@ -8,7 +8,7 @@ PoseFM was built with Python 3.11, PyTorch 2.10.0 and CUDA 12. Additionally we r
 1. Install [uv](https://docs.astral.sh/uv/) according to its docs.
 2. Clone this repository:
     ```bash
-    git clone https://github.com/helsinki-sda-group/posefm.git
+    git clone --recurse-submodules https://github.com/helsinki-sda-group/posefm.git
     ```
 3. Navigate to the project directory:
     ```bash
