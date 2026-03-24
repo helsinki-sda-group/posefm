@@ -34,6 +34,7 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from .FMNet import FMNet
 from .WAFT.waft_a1 import ViTWarpV8
@@ -46,9 +47,11 @@ import argparse
 class WAFTWrapper(ViTWarpV8):
     def __init__(self, args):
         super().__init__(args)
-    def forward(imgs: list):
+        print(args)
+    def forward(self, imgs: list):
         out = super().forward(imgs[0], imgs[1])
-        return out['flow'][-1]
+        flow = F.interpolate(out['flow'][-1], scale_factor=0.25, mode='bilinear', align_corners=True)
+        return flow / 20.0
 
 
 class PoseFMNet(nn.Module):
@@ -58,7 +61,7 @@ class PoseFMNet(nn.Module):
             from .PWC import PWCDCNet
             self.flowNet = PWCDCNet()
         elif frontend == "WAFT":
-            config_path = Path(__file__).parent / "WAFT/config/a1/tar-c-t.json"
+            config_path = Path(__file__).parent / "WAFT/config/a1/tar.json"
             with open(config_path) as f:
                 config = json.load(f)
                 config.update(**kwargs)

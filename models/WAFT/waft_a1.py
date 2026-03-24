@@ -60,7 +60,7 @@ class ViTWarpV8(nn.Module):
     def __init__(self, args):
         super().__init__()
         self.args = args
-        self.da_feature = self.freeze_(DepthAnythingFeature(encoder=args.dav2_backbone))
+        self.da_feature = self.freeze_(DepthAnythingFeature(encoder=args.dav2_backbone, pretrained=False))
         self.pretrain_dim = self.da_feature.model_configs[args.dav2_backbone]['features']
         self.network_dim = MODEL_CONFIGS[args.network_backbone]['features']
         self.refine_net = VisionTransformer(args.network_backbone, self.network_dim, patch_size=8)
