@@ -185,6 +185,7 @@ def sample_model(model,
                  batch_size,
                  num_t=10, 
                  step_size=None,
+                 seed=None
                  ):
     """Sample from the model using the provided conditioning batch.
     Args:
@@ -194,11 +195,12 @@ def sample_model(model,
         batch_size (int): Batch size
         num_t (int): Number of time steps to sample. Default: 10.
         step_size (float): Step size for the ODE solver. If given than num_t is ignored Default: None.
+        seed (int): Random seed. Default: None.
     Returns:
         final_poses (torch.Tensor): Sampled final poses for the input batch."""
 
 
-    x_init = sample_pose_uniform(batch_size, device, std=1)  # sample initial poses randomly
+    x_init = sample_pose_uniform(batch_size, device, std=1, seed=seed)  # sample initial poses randomly
     T = torch.linspace(0,1,num_t, dtype=torch.float32)  # sample times
 
     wrapped_vf = WrappedCondModel(cond_batch, model).to(device)

@@ -9,7 +9,7 @@ conditioning = "img"
 # Specify the dataset and its parameters
 [data]
 train.dataset_name = "tartantrain"
-#train.data_path = <specify path to tartan train data>
+#train.data_path = <path to tartan train data>
 train.batch_size = 96
 train.val_split = 0.2
 train.num_workers = 16
@@ -17,8 +17,8 @@ train.modality = "img"
 
 # Provide model params
 [model]
-save_dir = "models"
-# model_path = <path to pretrained model>
+save_dir = "ckpts"
+# model_path = <optional path to pretrained model>
 freeze = true # Freeze frontend
 params.full = true
 params.frontend = "PWC"

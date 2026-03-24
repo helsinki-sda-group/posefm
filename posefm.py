@@ -143,14 +143,15 @@ if __name__ == "__main__":
         type=str,
         help="Path to the TOML configuration file"
     )
+    parser.add_argument("--samples", type=int, help="Number of samples for each pose estimate", default=1)
     parser.add_argument("--out", type=str, help="Output direcotry path")
     args = parser.parse_args()
 
     posefm = PoseFM(args.config)
-    posefm.predict_poses() # Predict relative camera poses
+    posefm.predict_poses(sampling=args.samples) # Predict relative camera poses
     scale = np.array([0.13,  0.13,  0.13,  0.013,  0.013,  0.013]).reshape((1, -1))
     traj, gt_traj = posefm.create_trajectory(scale=scale) # Combine predicted poses into a trajectory
-    os.makedirs(args.out, exists_ok=True)
+    os.makedirs(args.out, exist_ok=True)
     PoseFM.save_trajectory(traj, args.out + "/pred_traj.txt")
 
     # Runs when test data provided GT poses 

@@ -11,13 +11,14 @@ dependencies = [
     "numpy>=1.26.4",
     "pyqt5>=5.15.11",
     "rerun-sdk>=0.23.1",
-    "torch>=2.10.0",
+    "torch==2.10.0",
     "torchvision>=0.25.0",
     "tqdm>=4.67.2",
     "transformers>=5.0.0",
     "voloader",
     "wandb>=0.24.1",
-    "cupy-cuda12x==12.3.0"
+    "cupy-cuda12x==12.3.0",
+    "timm>=1.0.26",
 ]
 
 [tool.uv.sources]

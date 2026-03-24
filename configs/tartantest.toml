@@ -1,14 +1,15 @@
 # Specify the dataset and its parameters
 [data]
 test.dataset_name = "tartantest"
-test.data_path = "data/tartan"
+#test.data_path = <path to tartan test data>
 test.batch_size = 16
 test.combined = false
+test.modality = "img"
 
 # Provide model type and its params
 [model]
 save_dir = "models"
-model_path = ""
+#model_path = <path to trained model>
 params.full = true
 params.frontend = "PWC"
 params.cache = true

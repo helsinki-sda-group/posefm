@@ -143,7 +143,7 @@ class Trainer:
             os.makedirs(model_dir, exist_ok=True)
 
         suffix = '_ckpt' if checkpoint else ''
-        model_path = f"{model_dir}/{self.config['model']['type']}_{time.strftime('%m%d_%H%M%S')}{suffix}.pth"
+        model_path = f"{model_dir}/PoseFM_{self.config['model']['params']['frontend']}_{time.strftime('%m%d_%H%M%S')}{suffix}.pth"
         to_save = {"model_state_dict": self.model.state_dict()}
         if checkpoint:
             to_save["optim_state_dict"] = self.optim.state_dict()
