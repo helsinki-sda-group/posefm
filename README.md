@@ -1,5 +1,22 @@
-# PoseFM
-This repository contains implementation of the PoseFM visual odometry method based on Flow Matching. PoseFM is the first visual odometry method based on generative modeling. 
+
+<h1 align="center">
+  <b>PoseFM: Relative Camera Pose Estimation Through
+Flow Matching</b>
+</h1>
+
+<p align="center">
+  <a href="https://arxiv.org/abs/2604.22350v1">Paper</a>
+</p>
+
+PoseFM is the first visual odometry framework based on generative modeling and Flow Matching. This repository provides the official implementation accompanying the paper.
+
+<p align="center">
+  <img src="PoseFM.png"
+       alt="Overview of the PoseFM pipeline"
+       width="85%">
+  <br>
+  <em>PoseFM overview. The figure depicts our training setup (a), inference setup (b) and model architecture (c). For more details refer to the paper.</em>
+</p>
 
 ## Requirements
 PoseFM was built with Python 3.11, PyTorch 2.10.0 and CUDA 12. Additionally we rely on [voloader](https://github.com/DominQu/voloader) for VO datasets implementations. For dependency management we use [uv](https://docs.astral.sh/uv/).
