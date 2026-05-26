@@ -72,7 +72,7 @@ def create_data_loader(dataset_name: str,
                        num_workers: int = 0,
                        modality: str = "all",
                        seed: int = None,
-                       sequences: list = []):
+                       sequences: list = ["00"]):
     """
     Create data loaders for specified dataset.
     
@@ -85,6 +85,7 @@ def create_data_loader(dataset_name: str,
         num_workers (int): Number of worker threads for data loading. Default is 0, which means data loading will be done in the main process.
         modality (str): Type of data to be loaded by the dataset. Available options: all, img, flow. Ground truth pose and intrinsic layer are always loaded.
         seed (int): Random generator seed. Default: None
+        sequences (list): KITTI sequences selected for evalutation. By default the method will be run on sequence 00. 
         
     Returns:
         dataloaders (dict): Dictionary containing at least one of train, validation, and test dataloaders.

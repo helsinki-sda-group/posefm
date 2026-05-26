@@ -82,8 +82,7 @@ class PoseFMNet(nn.Module):
     def forward(self, n, t, x):
         if self.full:
             if not self.cache or self.flow is None:
-                flow = self.flowNet(x[0:2])
-                self.flow = flow
+                self.flow = self.flowNet(x[0:2])
             flow_input = torch.cat( (self.flow, x[2]), dim=1 )  
         else:
             flow_input = x

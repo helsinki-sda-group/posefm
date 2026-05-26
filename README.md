@@ -25,7 +25,7 @@ To test our model please download test data from [TartanAir](https://github.com/
 Our model weights will be made available soon.
 
 ### Prepare config
-To run PoseFM you need a config file. We have provided example configs for testing the model on different datasets and for training. Please specify dataset path and model weights path.
+To run PoseFM you need a config file. We have provided example configs for testing the model on different datasets and for training in the `.\configs` directory. After selecting the appropriate config please modify it with your dataset path and model weights path.
 
 ### Run PoseFM
 Inference of PoseFM can be performed with:
@@ -46,3 +46,13 @@ This project is licensed under the [MIT License](LICENSE). Some parts of the cod
 ## Contact
 
 For questions or feedback, please open an issue.
+
+## Cite
+```
+@article{kuczkowski2026posefm,
+      title={PoseFM: Relative Camera Pose Estimation Through Flow Matching}, 
+      author={Dominik Kuczkowski and Laura Ruotsalainen},
+      journal={arXiv preprint arXiv:2604.22350}
+      year={2026},
+}
+```

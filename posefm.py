@@ -18,7 +18,7 @@ import os
 
 class PoseFM:
     def __init__(self, config: str|dict):
-        """Relative camera pose estimation for visual odometry using flow matching.
+        """PoseFM: Relative camera pose estimation for visual odometry using flow matching.
         Args:
             config (str|dict): Path to the configuration file or dict with config.
         """
@@ -37,21 +37,14 @@ class PoseFM:
         self.cond = self.config["posefm"]["conditioning"]
         if self.cond not in ["flow", "img"]:
             raise ValueError(f"Unsupported conditiong type. Given: {self.cond}")
+        self.numsamples = self.config["posefm"]["numsamples"] if "numsamples" in self.config["posefm"] else 1
     
-    def predict_poses(self, num_batches: int = None, sampling: int = 1):
-        """Predict camera poses using a trained model for `num_batches` batches in test dataset.   
-        Args:
-            num_batches (int, optional): Number of batches to process. If None, process all.
-            sampling (int): Number of separate samplings for each pose prediction. Default: 1
-        """
+    def predict_poses(self):
+        """Predict camera poses using a trained model."""
         self.model.eval()
         with torch.no_grad():
             self.poses = {}
-            for i, batch in enumerate(tqdm(self.dataloader, desc="Predicting poses")):
-                
-                if num_batches is not None and i >= num_batches:
-                    break
-                
+            for i, batch in enumerate(tqdm(self.dataloader, desc="Predicting poses")):  
                 self.poses[i] = {}
                 batch_size = batch["relpose"].shape[0]
 
@@ -63,7 +56,7 @@ class PoseFM:
                                 batch['intrinsic'].to(self.device, non_blocking=True)]
                 
                 sampled_poses = []
-                for _ in range(sampling):
+                for _ in range(self.numsamples):
                     sampled_poses.append(sample_model(self.model, 
                                         cond_batch, 
                                         self.device,
@@ -87,7 +80,7 @@ class PoseFM:
                 self.poses[i]["pred"] = samples[0]
                 self.poses[i]["samples"] = np.array(samples).transpose((1, 0, 2))
 
-                if sampling > 1:
+                if self.numsamples > 1:
                     self.poses[i]["mean"] = np.mean(self.poses[i]["samples"], axis=1)
                     self.poses[i]["std"] = np.std(self.poses[i]["samples"], axis=1)
     
@@ -143,12 +136,11 @@ if __name__ == "__main__":
         type=str,
         help="Path to the TOML configuration file"
     )
-    parser.add_argument("--samples", type=int, help="Number of samples for each pose estimate", default=1)
     parser.add_argument("--out", type=str, help="Output direcotry path")
     args = parser.parse_args()
 
     posefm = PoseFM(args.config)
-    posefm.predict_poses(sampling=args.samples) # Predict relative camera poses
+    posefm.predict_poses() # Predict relative camera poses
     scale = np.array([0.13,  0.13,  0.13,  0.013,  0.013,  0.013]).reshape((1, -1))
     traj, gt_traj = posefm.create_trajectory(scale=scale) # Combine predicted poses into a trajectory
     os.makedirs(args.out, exist_ok=True)
