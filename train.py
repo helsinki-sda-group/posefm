@@ -14,6 +14,7 @@ import torch
 from flow_matching.path.scheduler import CondOTScheduler
 from flow_matching.path import AffineProbPath
 from tqdm import tqdm
+import numpy as np
 
 
 class Trainer:
@@ -51,6 +52,15 @@ class Trainer:
         # Initialize empty list for loggers
         self.loggers = []
 
+        # Prepare random generators
+        self.torch_g = torch.Generator(device=self.device)
+        if "seed" in self.config["trainer"]:
+            seed = self.config["trainer"]["seed"]
+            self.torch_g.manual_seed(seed)
+        else:
+            seed = self.torch_g.seed()
+        self.numpy_g = np.random.default_rng(seed+1)
+
     def register_logger(self, logger):
         self.loggers.append(logger)
 
@@ -58,7 +68,7 @@ class Trainer:
         # Fetch gt data
         x_1 = batch["relpose"].to(self.device, non_blocking=True)
         # Sample random translation and rotation
-        x_0 = sample_pose_uniform(x_1.shape[0], self.device, std=1)
+        x_0 = sample_pose_uniform(x_1.shape[0], self.device, std=1, torch_g=self.torch_g, numpy_g=self.numpy_g)
 
         if self.cond == 'flow':
             x_1_cond = torch.cat([batch['flow'], batch['intrinsic']], dim=1).to(self.device, non_blocking=True)
