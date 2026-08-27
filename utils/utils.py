@@ -16,7 +16,7 @@ class WrappedCondModel(ModelWrapper):
     def __init__(self, cond_batch, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.cond_batch = cond_batch
-        if hasattr(self.model, "flow"):
+        if hasattr(self.model, "flow") and self.model.sample==0:
             self.model.flow = None
     def forward(self, x: torch.Tensor, t: torch.Tensor, **extras):
         if len(t.shape) < 2:
@@ -24,6 +24,35 @@ class WrappedCondModel(ModelWrapper):
         v = self.model(x, t, self.cond_batch)
         return v
 
+def convert_vonet_checkpoint(old_checkpoint):
+    if "state_dict" in old_checkpoint:
+        old_state_dict = old_checkpoint["state_dict"]
+    else:
+        old_state_dict = old_checkpoint
+
+    new_state_dict = {}
+    counter_total = 0
+    counter_update = 0
+    for old_key, value in old_state_dict.items():
+
+        if old_key.startswith("flowPoseNet."):
+            new_key = "poseNet." + old_key[len("flowPoseNet."):]
+            counter_update += 1
+        elif old_key.startswith("flowNet."):
+            new_key = old_key
+
+        else:
+            new_key = old_key
+
+        if new_key in new_state_dict:
+            raise RuntimeError(
+                f"Checkpoint key collision: {new_key}"
+            )
+
+        new_state_dict[new_key] = value
+        counter_total +=1
+    print(f"Total keys: {counter_total}, updated keys: {counter_update}")
+    return new_state_dict
 
 def load_state_dicts(model, config, device, optim=None):
     """Load state dicts if path provided in the config"""
@@ -32,6 +61,7 @@ def load_state_dicts(model, config, device, optim=None):
         model_path = config["model_path"]
         if Path(model_path).is_file():
             state_dict = torch.load(model_path, map_location=device)
+            state_dict["model_state_dict"] = convert_vonet_checkpoint(state_dict["model_state_dict"])
             model.load_state_dict(state_dict["model_state_dict"])
             print(f"Model loaded from {model_path}")
         else:
@@ -162,20 +192,19 @@ def create_data_loader(dataset_name: str,
     return dataloaders
 
 
-def sample_pose_uniform(batch_size: int, device: torch.device, std: float = 1, seed = None):
+def sample_pose_uniform(batch_size: int, device: torch.device, std: float = 1, torch_g=None, numpy_g=None):
     """Sample random poses uniformly in the space of translations and rotations.
     Args:
         batch_size (int): Number of samples to generate.
         device (torch.device): Device to run the sampling on.
+        torch_g: Torch random generator. Default: None
+        numpy_g: Numpy random generator. Default: None
     Returns:
         poses (torch.Tensor): Sampled poses as a tensor of shape (batch_size, 6).
     """
-    g = torch.Generator(device=device)
-    if seed is not None:
-        g.manual_seed(seed)
 
-    translation = std * torch.randn((batch_size, 3), generator=g, dtype=torch.float32, device=device)  # Random translation with 0 mean and std
-    rotation = torch.tensor(R.random(batch_size, rng=seed).as_rotvec(), dtype=torch.float32, device=device)  # Random rotation
+    translation = std * torch.randn((batch_size, 3), generator=torch_g, dtype=torch.float32, device=device)  # Random translation with 0 mean and std
+    rotation = torch.tensor(R.random(batch_size, rng=numpy_g).as_rotvec(), dtype=torch.float32, device=device)  # Random rotation
     poses = torch.cat([translation, rotation], dim=1).to(device)
     return poses
 
@@ -186,7 +215,8 @@ def sample_model(model,
                  batch_size,
                  num_t=10, 
                  step_size=None,
-                 seed=None
+                 torch_g=None,
+                 numpy_g=None
                  ):
     """Sample from the model using the provided conditioning batch.
     Args:
@@ -196,12 +226,13 @@ def sample_model(model,
         batch_size (int): Batch size
         num_t (int): Number of time steps to sample. Default: 10.
         step_size (float): Step size for the ODE solver. If given than num_t is ignored Default: None.
-        seed (int): Random seed. Default: None.
+        torch_g: Torch random generator. Default: None
+        numpy_g: Numpy random generator. Default: None
     Returns:
         final_poses (torch.Tensor): Sampled final poses for the input batch."""
 
 
-    x_init = sample_pose_uniform(batch_size, device, std=1, seed=seed)  # sample initial poses randomly
+    x_init = sample_pose_uniform(batch_size, device, std=1, torch_g=torch_g, numpy_g=numpy_g)  # sample initial poses randomly
     T = torch.linspace(0,1,num_t, dtype=torch.float32)  # sample times
 
     wrapped_vf = WrappedCondModel(cond_batch, model).to(device)
