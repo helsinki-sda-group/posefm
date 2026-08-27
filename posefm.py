@@ -38,13 +38,20 @@ class PoseFM:
         if self.cond not in ["flow", "img"]:
             raise ValueError(f"Unsupported conditiong type. Given: {self.cond}")
         self.numsamples = self.config["posefm"]["numsamples"] if "numsamples" in self.config["posefm"] else 1
+        self.torch_g = torch.Generator(device=self.device)
+        if "seed" in self.config["posefm"]:
+            seed = self.config["posefm"]["seed"]
+            self.torch_g.manual_seed(seed)
+        else:
+            seed = None
+        self.numpy_g = np.random.default_rng(seed)
     
     def predict_poses(self):
         """Predict camera poses using a trained model."""
         self.model.eval()
         with torch.no_grad():
             self.poses = {}
-            for i, batch in enumerate(tqdm(self.dataloader, desc="Predicting poses")):  
+            for i, batch in enumerate(tqdm(self.dataloader, desc="Predicting poses")):
                 self.poses[i] = {}
                 batch_size = batch["relpose"].shape[0]
 
@@ -56,11 +63,14 @@ class PoseFM:
                                 batch['intrinsic'].to(self.device, non_blocking=True)]
                 
                 sampled_poses = []
-                for _ in range(self.numsamples):
+                for s in range(self.numsamples):
+                    self.model.sample = s
                     sampled_poses.append(sample_model(self.model, 
                                         cond_batch, 
                                         self.device,
                                         batch_size,
+                                        torch_g=self.torch_g,
+                                        numpy_g=self.numpy_g,
                                         **self.config["posefm"]["sampling"]))
 
 
@@ -83,6 +93,7 @@ class PoseFM:
                 if self.numsamples > 1:
                     self.poses[i]["mean"] = np.mean(self.poses[i]["samples"], axis=1)
                     self.poses[i]["std"] = np.std(self.poses[i]["samples"], axis=1)
+
     
     def create_trajectory(self, quat: bool = False, scale = None):
         """Create a 3D trajectory from the predicted relative poses.
