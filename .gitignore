@@ -1,5 +1,8 @@
 .venv
+venv
 *__pycache__
 
-output
+outputs*
 ckpts
+wandb
+logs
