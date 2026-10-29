@@ -88,4 +88,6 @@ class PoseFMNet(nn.Module):
             flow_input = x
         # Estimate pose using flow matching
         pose = self.poseNet(n, t, flow_input)
-        return pose
+        if self.full:
+            return pose, self.flow
+        return (pose,)

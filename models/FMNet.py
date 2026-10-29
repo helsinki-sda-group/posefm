@@ -97,14 +97,14 @@ class FMNet(nn.Module):
         self.layer5 = self._make_layer(BasicBlock, outputnums[6], blocknums[6], 2, 1, 1) # 3 x 2
         fcnum = outputnums[6] * 6
         self.modified = modified
-        if self.modified:
-            # Custom embedding layers for FM
-            self.noise_emb = nn.Linear(6, fcnum)
-            self.time_emb = nn.Linear(1, fcnum)
-            self.emb_map = nn.Sequential(
-                linear(3*fcnum, fcnum),
-                linear(fcnum, fcnum),
-                linear(fcnum, fcnum))
+
+        # Custom embedding layers for FM
+        self.noise_emb = nn.Linear(6, fcnum)
+        self.time_emb = nn.Linear(1, fcnum)
+        self.emb_map = nn.Sequential(
+            linear(3*fcnum, fcnum),
+            linear(fcnum, fcnum),
+            linear(fcnum, fcnum))
 
         fc1_trans = linear(fcnum, 128)
         fc2_trans = linear(128,32)

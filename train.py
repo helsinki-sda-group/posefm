@@ -10,6 +10,7 @@ import tomllib
 import os
 import argparse
 
+import wandb
 import torch
 from flow_matching.path.scheduler import CondOTScheduler
 from flow_matching.path import AffineProbPath
@@ -86,7 +87,7 @@ class Trainer:
         if self.cond:
             model_input.append(x_1_cond)
         
-        pred = self.model(*model_input)
+        pred, _ = self.model(*model_input)
 
         loss = ((pred - path_sample.dx_t)**2).sum(dim=-1)
         loss = loss.mean()
@@ -173,9 +174,17 @@ if __name__ == "__main__":
 
     config_path = args.config
     trainer = Trainer(config_path)
-    # Register loggers
+
+    # Simple terminal logger
     logger = TerminalLogger()
     trainer.register_logger(logger)
+    
+    # Wandb logger
+    # wandb.init(
+    #     project="posefm",
+    #     config=trainer.config
+    # )
+    # trainer.register_logger(wandb)
 
     # Start the training process
     trainer.train()
