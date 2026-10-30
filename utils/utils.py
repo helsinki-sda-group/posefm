@@ -21,7 +21,7 @@ class WrappedCondModel(ModelWrapper):
     def forward(self, x: torch.Tensor, t: torch.Tensor, **extras):
         if len(t.shape) < 2:
             t = t.repeat(x.shape[0], 1)
-        v = self.model(x, t, self.cond_batch)
+        v, _ = self.model(x, t, self.cond_batch)
         return v
 
 def convert_vonet_checkpoint(old_checkpoint):

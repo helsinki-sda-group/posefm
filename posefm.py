@@ -94,7 +94,6 @@ class PoseFM:
                     self.poses[i]["mean"] = np.mean(self.poses[i]["samples"], axis=1)
                     self.poses[i]["std"] = np.std(self.poses[i]["samples"], axis=1)
 
-    
     def create_trajectory(self, quat: bool = False, scale = None):
         """Create a 3D trajectory from the predicted relative poses.
         Args:
@@ -147,7 +146,7 @@ if __name__ == "__main__":
         type=str,
         help="Path to the TOML configuration file"
     )
-    parser.add_argument("--out", type=str, help="Output direcotry path")
+    parser.add_argument("--out", type=str, help="Output directory path")
     args = parser.parse_args()
 
     posefm = PoseFM(args.config)
